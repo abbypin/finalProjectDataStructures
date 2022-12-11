@@ -1,4 +1,5 @@
 /** A class created to hold and access the airport's information. (PS: I called it "Struct" because it acts like a c++ struct in the fact that it holds the variables together in one place.) */
+// TODO: AirportInfoStructClass Not used anymore
 public class AirportInfoStructClass {
     private String airportCode;
     private String city;
@@ -50,4 +51,18 @@ public class AirportInfoStructClass {
     public void setState(String newState) {
         state = newState;
     }//end setState()
+
+    public void printData() {
+        System.out.println(" - " + airportName + " " + city + ", " + state);
+    }//end printData()
+
+    public String[] toArray() {
+        String[] array = new String[4];
+        array[0] = getAirportCode();
+        array[1] = getCity();
+        array[2] = getAirportName();
+        array[3] = getState();
+
+        return array;
+    }//end toArray()
 }//end AirportInfoStruckClass
