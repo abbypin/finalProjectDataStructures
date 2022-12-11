@@ -1,4 +1,5 @@
 import java.util.NoSuchElementException;
+import java.lang.Exception;
 
 public class LinkedBag<T> implements BagInterface<T> {
     Node firstNode;
@@ -40,55 +41,67 @@ public class LinkedBag<T> implements BagInterface<T> {
 
     // Replace the Node with a new Node
     public void replace(int index, T dataFive) {
-        // Veriables
-        Node getNode = null;
-        Node nodeBefore = null;
-        Node nodeAfter = null;
+        if (index > getSize()) {
+            // Veriables
+            Node getNode = null;
+            Node nodeBefore = null;
+            Node nodeAfter = null;
 
-        // Try to get the Node
-        try {
-            getNode = getNodeAt(index);
-        } catch (Exception err) {
-            System.out.println(err + "Failed to get one of the index Node for replace");
-        }//end try-catch
-        // Try to get the Node Before the Node getting Replaced
-        try {
-            nodeBefore = getNodeAt(index - 1);
-        } catch (Exception err) {
-            System.out.println(err + "Failed to get one of the index NodeBefore for replace");
-        }//end try-catch
-        // Try to get the Node After the Node getting Replaced
-        try {
-            nodeAfter = nodeBefore.getNextNode();
-        } catch (Exception err) {
-            if (getIndexOf(nodeAfter.getData()[0]) == getSize() - 1 || nodeBefore.getNextNode() == null) {
-                nodeAfter = null;
+            // Try to get the Node
+            try {
+                getNode = getNodeAt(index);
+            } catch (Exception err) {
+                getNode = firstNode;
+                System.out.println(err + "Failed to get an index Node for replace");
+            }//end try-catch
+            
+            if (getNode.getData()[0] == firstNode.getData()[0]) {
+                nodeBefore = null;
             } else {
-                System.out.println(err + "Failed to get one of the index NodeAfter for replace");
+                // Try to get the Node Before the Node getting Replaced
+                try {
+                    nodeBefore = getNodeAt(index - 1);
+                } catch (Exception err) {
+                    System.out.println(err + "Failed to get an index NodeBefore for replace");
+                }//end try-catch
             }//end if-else
-        }//end try-catch
-        
-        // Get the Current Airport Data
-        T dataOne = getNode.getData()[0];
-        T dataTwo = getNode.getData()[1];
-        T dataThree = getNode.getData()[2];
-        T dataFour = getNode.getData()[3];
 
-        // Create a New Array Containing the Old Data and the new Edge Data
-        @SuppressWarnings("unchecked")
-        T[] data = (T[])new Object[5];
-        data[0] = dataOne;
-        data[1] = dataTwo;
-        data[2] = dataThree;
-        data[3] = dataFour;
-        data[4] = dataFive;
+            if (nodeBefore == null) {
+                nodeAfter = firstNode;
+            } else {
+                if (nodeBefore.getNextNode().getData()[0] == null) {
+                    nodeAfter = null;
+                } else {
+                    try {
+                        nodeAfter = nodeBefore.getNextNode();
+                    } catch (Exception err) {
+                        System.out.println(err + "Failed to get an index NodeBefore for replace");
+                    }//end try-catch
+                }//end if-else
+            }//end if-else
 
-        // Create a New Node Containing Data
-        Node newNode = new Node(data);
-        // Set the Next Node
-        newNode.setNextNode(nodeAfter);
-        // Set the New Node on its Previous Node
-        nodeBefore.setNextNode(newNode);
+            // Get the Current Airport Data
+            T dataOne = getNode.getData()[0], dataTwo = getNode.getData()[1], dataThree = getNode.getData()[2], dataFour = getNode.getData()[3];
+
+            // Create a New Array Containing the Old Data and the new Edge Data
+            @SuppressWarnings("unchecked")
+            T[] data = (T[])new Object[5];
+            data[0] = dataOne;
+            data[1] = dataTwo;
+            data[2] = dataThree;
+            data[3] = dataFour;
+            data[4] = dataFive;
+
+            // Create a New Node Containing Data
+            Node newNode = new Node(data);
+            // Set the Next Node
+            newNode.setNextNode(nodeAfter);
+            // Set the New Node on its Previous Node
+            if (nodeBefore == null)
+                firstNode = newNode;
+            else
+                nodeBefore.setNextNode(newNode);
+        }//end if
     }//end replace()
 
     // Remove the firstNode

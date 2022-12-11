@@ -11,15 +11,22 @@ public class AirportApp {
         
         // Get the Airport Data from storeData()
         BagInterface<Object> airportData = storeData(airportList);
+        for (int i = 0; i < airportData.getSize(); i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(airportList.get(i)[j] + " ");
+            }//end for-loop
+            System.out.println("");
+        }//end for-loop
+        
 
         // Fill the Graph
         for (int i = 0; i < airportData.getSize(); i++) {
-            String vertex = airportData.get(i).toString();
+            String vertex = airportData.get(i)[0].toString();
             graph.addVertex(vertex); // Add the Airport Code as a Vertex in the Graph
 
-            Object[] edgeData = (Object[]) airportData.get(i)[5];
-            String fromAirport = (String) edgeData[0];
-            String toAirport = (String) edgeData[1];
+            Object[] edgeData = (Object[]) airportData.get(i)[4];
+            String fromAirport = edgeData[0].toString();
+            String toAirport = edgeData[1].toString();
             int distance = (int) edgeData[2];
 
             // Create the Edge with the New Information
