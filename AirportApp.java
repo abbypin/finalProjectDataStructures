@@ -1,3 +1,12 @@
+//
+// Name: Pinkus, A.
+// Project: Project 5
+// Due: 12/12/2020
+// Course: CS2400.02
+// Description: Airport app to find the shortest distance between two airports.
+// Note: I was given exxtended time for the project
+//
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;

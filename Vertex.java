@@ -1,3 +1,12 @@
+//
+// Name: Pinkus, A.
+// Project: Project 5
+// Due: 12/12/2020
+// Course: CS2400.02
+// Description: The Vertex class.
+// Note: I was given exxtended time for the project
+//
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
