@@ -119,6 +119,10 @@ public class LinkedDictionary<K, V> implements DictionaryInterface<K, V> {
         return new KeyIterator();
     }//end getKeyIterator()
 
+    public Iterator<V> getValueIterator() {
+        return new ValueIterator();
+    }//end getValueIterator()
+
 // Basic Methods
     public boolean isEmpty() {
         return (size == 0);
@@ -159,6 +163,36 @@ public class LinkedDictionary<K, V> implements DictionaryInterface<K, V> {
 
             if (hasNext()) {
                 result = nextNode.getKey();
+                nextNode = nextNode.getNextNode();
+            } else {
+                throw new NoSuchElementException();
+            }//end if-else
+
+            return result;
+        }//end next()
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }//end remove()
+    }//end KeyIterator
+
+// Value Iterator
+    private class ValueIterator implements Iterator<V> {
+        private Node nextNode;
+
+        public ValueIterator() {
+            nextNode = firstNode;
+        }//end constructor
+
+        public boolean hasNext() {
+            return (nextNode != null);
+        }//end hasNext()
+
+        public V next() {
+            V result;
+
+            if (hasNext()) {
+                result = nextNode.getValue();
                 nextNode = nextNode.getNextNode();
             } else {
                 throw new NoSuchElementException();
