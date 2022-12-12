@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.lang.Double;
 import java.util.Stack;
 
+/** Airport App gets airport data and creates a Directed Graph. Also, finds the Shortest Distance between two airports. */
 public class AirportApp {
+    /** Main() controls the menu of options. */
     public static void main(String[] args) {
         ArrayList<String[]> airportList = new ArrayList<>();
         ArrayList<String[]> distanceList = new ArrayList<>();
@@ -31,6 +33,7 @@ public class AirportApp {
         do {
             // Variable
             String userLine = ""; // The String Prepared For If the User Inputs More for the Command
+            int indexSpace = 0;
 
             // Prompt the User
             System.out.print("\nCommand? ");
@@ -48,43 +51,50 @@ public class AirportApp {
             // Manage the Menu
             switch (choice) {
                 case 'H':
-                    // Method 2
+                    // Menu Choices
                     System.out.println("\nQ  Query the airport information by entering the airport code.");
-                    // Method 3
                     System.out.println("D  Find the minimum distance between two airports.");
+                    System.out.println("I  Insert an edge into the graph.");
+                    System.out.println("R  Remove an edge from the graph. (Currently not supported).");
                     System.out.println("E  Exit");
                     break;
                 case 'Q':
                     getAirportInfo(dataList, userLine);
                     break;
                 case 'D':
-                    int indexSpace = userLine.indexOf(" ");
+                    indexSpace = userLine.indexOf(" ");
                     String firstCode = userLine.substring(0, indexSpace);
                     String secondCode = userLine.substring(indexSpace);
                     getShortestDistance(graph, firstCode, secondCode);
+                    break;
+                case 'I':
+                    // indexSpace = userLine.indexOf(" ");
+                    // String first = userLine.substring(0, indexSpace);
+                    // int indexSpace2 = userLine.indexOf(" ", indexSpace);
+                    // String second = userLine.substring(indexSpace, indexSpace2);
+                    // String distStr = userLine.substring(indexSpace2);
+                    // double distance = (double)Double.parseDouble(distStr);
+                    // insertEdge(graph, first, second, distance);
+                    System.out.println("The Input i was doing was not working and it is time to submit.");
+                    break;
+                case 'R':
+                    deleteEdge();
+                    break;
                 case 'E':
                     break;
                 default:
-                    System.out.println("Not a correct Menu Choice.");
-                    // Method 2
+                    System.out.println("Invalid Command.");
+                    // Menu Choices
                     System.out.println("\nQ  Query the airport information by entering the airport code.");
-                    // Method 3
                     System.out.println("D  Find the minimum distance between two airports.");
+                    System.out.println("I  Insert an edge into the graph.");
+                    System.out.println("R  Remove an edge from the graph. (Currently not supported).");
                     System.out.println("E  Exit");
             };//end switch
         } while (choice != 'E');
 
         user.close(); // Close the User Scanner
     }//end main()
-
-    // TODO: Take this out
-    public static void displayTest() {
-        // for (int i = 0; i < distanceList.size(); i++) {
-        //     System.out.println(distanceList.get(i)[0] + " --> " + distanceList.get(i)[1] + " " + distanceList.get(i)[2]);
-        // }//end for-loop
-
-        // //graph.display();
-    }
 
     // 1. Read the original data files and store the data to appropriate data structures.
     /** A method that reads the data files "airport.csv" and "distance.csv". 
@@ -93,7 +103,6 @@ public class AirportApp {
      * With distances.csv, the data is read and put into the Edges of the DirectedGraph.
      * @param airportList The LinkedList variable created in main(). Used to hold the airport data objects.
      * @return Returns the created DirectedGraph. */
-    // TODO: Fix the code to put the airport and distance data into the LinkedBag
     public static ArrayList<String[]> storeData(ArrayList<String[]> airportList, ArrayList<String[]> distanceList) {
         // Try to Open the Files
         try {
@@ -114,7 +123,7 @@ public class AirportApp {
                     airportInfo[i] = airportsScan.next();
                 }//end for-loop
 
-                    airportList.add(airportInfo);
+                airportList.add(airportInfo);
             }//end while-loop
 
             airportsScan.close(); // Close the Airport Scanner
@@ -149,19 +158,23 @@ public class AirportApp {
      * @param str The String airport code to search for.
      * @return The int type "index" of the airport code String[] or -1 if no match is found. */
     public static int getAirportIndex(ArrayList<String[]> airportList, String str) {
+        // Variables
         boolean found = false;
         int i = 0, airportIndex = 0;
+
+        // Loop through Airport Array List to find the String (str)
         while (!found && (i < airportList.size())) {
-            String nextCode = airportList.get(i)[0];
-            if (nextCode.equals(str)) {
+            String nextCode = airportList.get(i)[0]; // the next airport code
+            if (nextCode.equals(str)) { // if found
                 airportIndex = i;
                 found = true;
                 return airportIndex;
-            } else {
+            } else { // if not found
                 i++;
             }//end if-else
         } // get the index of the code in the ArrayList
 
+        // If the String (str) is Not in the Airport ArrayList
         if (found == false) {
             airportIndex = -1;
         }//end if
@@ -200,26 +213,45 @@ public class AirportApp {
     }//end getAirportInfo()
 
     // 3. Find the connection between two airports. Get two airport codes and find the shortest distance between two airports.
+    /** Gets the Shortest Path between two given airports. Prints a message if their is not path between the given airports.
+     * @param graph The Directed Graph.
+     * @param airportOne An object that labels the origin vertex of the path.
+     * @param airportTwo An object that labels the end vertex of the path. */
     public static void getShortestDistance(GraphInterface<String> graph, String airportOne, String airportTwo) {
-        Stack<String> path = new Stack<>();
-        graph.getCheapestPath(airportOne, airportTwo, path);
+        // Variables
+        Stack<String> path = new Stack<>(); // the path stack
+        double pathCost = graph.getCheapestPath(airportOne, airportTwo, path); // the path cost from the getCheapestPath method
+
+        // Check if the Path Exists and Print
+        if (pathCost == 0) {
+            System.out.println("Airports not connected.");
+        } else {
+            while (!path.isEmpty()) {
+                System.out.print(path.pop() + " ");
+            }//end while-loop
+        }//end if
     }//end getShortestDistance()
 
     // 4. Insert a connection (edge) between two airports -- the user will be asked to enter the two airport codes and its distance. Note that if a pair of airport codes already exists or if the airport code doesn't exist, print out a warning message.
-    public static void insertEdge() {
-
+    /** Inserts a new edge into the graph, if possible.
+     * @param graph The graph.
+     * @param begin An object that labels the proposed origin vertex of the edge.
+     * @param end An object that labels the proposed end vertex of the edge.
+     * @param distance A double that is the proposed edge weight. */
+    public static void insertEdge(GraphInterface<String> graph, String begin, String end, double distance) {
+        // Add Edge and Save the Result
+        boolean added = graph.addEdge(begin, end, distance);
+        // Check if an Edge was Added
+        if (added)
+            System.out.println("An edge was added between " + begin + " and " + end + " with the distance of " + distance);
+        else
+            System.out.println("Could not add an edge between " + begin + " and " + end + ". Please check your airport codes.");
     }//end insertEdge()
 
     // 5. Delete a connection (edge) -- the user will be asked to enter two airport codes for this connection. Note that if the connection entered doesn't exist, print out a warning message.
+    /** Currently not a supported method. */
     public static void deleteEdge() {
-
+        System.out.println("The user may not delete edges at this time.");
     }//end deleteEdge()
-
-    // TODO: Ready information
-    // Sout << "Command?"
-    // TODO: Recieve path
-    // TODO: filter input
-    // If elegable input print out the cheapest path
-    // Respond: Invaid Command, Airport code unknown, Airports not connected
 }//end AirportApp
 
