@@ -1,55 +1,48 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.lang.Double;
+import java.util.Stack;
 
 public class AirportApp {
     public static void main(String[] args) {
-        BagInterface<Object> airportList = new LinkedBag<>();
-        // Create the Graph to store the Graph Data
-        GraphInterface<String> graph = new DirectedGraph<>();
+        ArrayList<String[]> airportList = new ArrayList<>();
+        ArrayList<String[]> distanceList = new ArrayList<>();
         Scanner user = new Scanner(System.in);
         
         // Get the Airport Data from storeData()
-        BagInterface<Object> airportData = storeData(airportList);
-        for (int i = 0; i < airportData.getSize(); i++) {
-            for (int j = 0; j < 5; j++) {
-                System.out.print(airportList.get(i)[j] + " ");
-            }//end for-loop
-            System.out.println("");
+        ArrayList<String[]> dataList = storeData(airportList, distanceList);
+        GraphInterface<String> graph = new DirectedGraph<>();
+        int length = dataList.size(), size = distanceList.size();
+
+        // Add Each Vertex
+        for (int i = 0; i < length; i++) {
+            String vertex = dataList.get(i)[0];
+            graph.addVertex(vertex);
         }//end for-loop
-        
 
-        // Fill the Graph
-        for (int i = 0; i < airportData.getSize(); i++) {
-            String vertex = airportData.get(i)[0].toString();
-            graph.addVertex(vertex); // Add the Airport Code as a Vertex in the Graph
-
-            Object[] edgeData = (Object[]) airportData.get(i)[4];
-            String fromAirport = edgeData[0].toString();
-            String toAirport = edgeData[1].toString();
-            int distance = (int) edgeData[2];
-
-            // Create the Edge with the New Information
-            graph.addEdge(fromAirport, toAirport, distance);
+        for (int i = 0; i < size; i++) {
+            double distance = (double)Double.parseDouble(distanceList.get(i)[2]);
+            graph.addEdge(distanceList.get(i)[0], distanceList.get(i)[1], distance);
         }//end for-loop
 
         char choice = ' ';
         do {
             // Variable
-            String airport = ""; // The String Prepared For If the User Inputs More for the Command
+            String userLine = ""; // The String Prepared For If the User Inputs More for the Command
 
             // Prompt the User
-            System.out.print("Command? ");
+            System.out.print("\nCommand? ");
 
             // Get the Choice from the Input Line
             String input = user.nextLine(); // Get the Input Line
-            String ch = input.substring(0, 1); // Get the Choice out of the Sting
-            char[] chArray = ch.toCharArray(); // Set the Choice String in a Char Array
-            choice = chArray[0]; // Take out Choice from the Char Array
+            choice = input.substring(0, 1).toCharArray()[0]; // Get Choice from input
 
-            // Get the Rest of the User Input if it exists
+            //Get the Rest of the User Input if it exists
             if (input.length() > 1) {
-                airport = input.substring(2); // This code is correct
+                userLine = input.substring(2);
+                userLine = userLine + "\n";
             }//end if
 
             // Manage the Menu
@@ -62,8 +55,13 @@ public class AirportApp {
                     System.out.println("E  Exit");
                     break;
                 case 'Q':
-                    getAirportInfo(airportList, airport);
+                    getAirportInfo(dataList, userLine);
                     break;
+                case 'D':
+                    int indexSpace = userLine.indexOf(" ");
+                    String firstCode = userLine.substring(0, indexSpace);
+                    String secondCode = userLine.substring(indexSpace);
+                    getShortestDistance(graph, firstCode, secondCode);
                 case 'E':
                     break;
                 default:
@@ -79,6 +77,15 @@ public class AirportApp {
         user.close(); // Close the User Scanner
     }//end main()
 
+    // TODO: Take this out
+    public static void displayTest() {
+        // for (int i = 0; i < distanceList.size(); i++) {
+        //     System.out.println(distanceList.get(i)[0] + " --> " + distanceList.get(i)[1] + " " + distanceList.get(i)[2]);
+        // }//end for-loop
+
+        // //graph.display();
+    }
+
     // 1. Read the original data files and store the data to appropriate data structures.
     /** A method that reads the data files "airport.csv" and "distance.csv". 
      * With airport.csv, the airport data is collected in an object of the "AirportInfoStructClass" class. 
@@ -87,57 +94,44 @@ public class AirportApp {
      * @param airportList The LinkedList variable created in main(). Used to hold the airport data objects.
      * @return Returns the created DirectedGraph. */
     // TODO: Fix the code to put the airport and distance data into the LinkedBag
-   public static BagInterface<Object> storeData(BagInterface<Object> airportList) {
+    public static ArrayList<String[]> storeData(ArrayList<String[]> airportList, ArrayList<String[]> distanceList) {
         // Try to Open the Files
         try {
             // Airports File Open and Scanner
             File airports = new File("airports.csv"); // file with the airport info
             Scanner airportsScan = new Scanner(airports);
+            airportsScan.useDelimiter("[,\\n]");
             // Distances File Open and Scanner
             File distances = new File("distances.csv"); // file with the edges to the graph
             Scanner distancesScan = new Scanner(distances);
+            distancesScan.useDelimiter("[\\s\\n]");
 
-            // Loop through Airports File
+            // Loop through Airports File O(n*4) = O(n)
             while (airportsScan.hasNextLine()) {
                 // Each Line in the File contains 4 Pieces of Information
-                String airportLine = airportsScan.nextLine(); // Get Next Line
+                String[] airportInfo = new String[4];
+                for (int i = 0; i < 4; i++) {
+                    airportInfo[i] = airportsScan.next();
+                }//end for-loop
 
-                // Get Airport Code's End Index and the String Itself
-                int airportCodeIndex = airportLine.indexOf(",");
-                String airportCode = airportLine.substring(0, airportCodeIndex);// Get the Airport Code
-                // Get Airport City's End Index and the String Itself
-                int cityIndex = airportLine.indexOf(",", airportCodeIndex);
-                String city = airportLine.substring(airportCodeIndex, cityIndex); // Get the Airport City
-                // Get Airport Name's End Index and the String Itself
-                int airportNameIndex = airportLine.indexOf(",", cityIndex);
-                String airportName = airportLine.substring(cityIndex, airportNameIndex); // Get the Airport Name
-                // Get Airport State's End Index and the String Itself
-                int stateIndex = airportLine.indexOf(",", airportNameIndex);
-                String state = airportLine.substring(airportNameIndex, stateIndex); // Get the Airport's State
-                
-                // The Array will Store the Airport Info Object. for when we want to access the data
-                airportList.add(airportCode, city, airportName, state, null);                
+                    airportList.add(airportInfo);
             }//end while-loop
 
             airportsScan.close(); // Close the Airport Scanner
 
-            int j = 0;
             // Loop through the Distance File
             while (distancesScan.hasNextLine()) {
+                String[] distanceInfo = new String[3];
                 // Get the Airport Code of the "From" Airport
-                String fromAirport = distancesScan.next();
+                distanceInfo[0] = distancesScan.next();
                 // Get the Airport Code of the "To" Airport
-                String toAirport = distancesScan.next();
+                distanceInfo[1] = distancesScan.next();
                 // Get the Distance between the Airports
-                int distance = distancesScan.nextInt();
-
-                Object[] edge = new Object[3];
-                edge[0] = fromAirport;
-                edge[1] = toAirport;
-                edge[2] = distance;
-
-                airportList.replace(j, edge);
-                j++;
+                double distance = distancesScan.nextDouble();
+                String distanceStr = "";
+                distanceStr += distance;
+                distanceInfo[2] = distanceStr;
+                distanceList.add(distanceInfo);
             }//end while-loop
 
             distancesScan.close(); // Close the Distance Scanner
@@ -150,53 +144,65 @@ public class AirportApp {
         return airportList;
     }//end storeData()
 
-    // 2. Let the user of this program enter an airport code and your program should print out the airport information.
-    public static void getAirportInfo(BagInterface<Object> airportList, String airport) {
-        boolean done = false;
-        int index = 0; // The Starting Index for Separationg the User Inputs
-        
-        while (!done) {
-            // Variables
-            int endIndex;
-            String str = "";
-
-            // Get the Airport Code
-            if (index == airport.length() - 3) {
-                // Get the Airport Code String
-                str = airport.substring(index);
-                done = true; // set done
+    /** Helper method that traverses the airport ArrayList to find the matching Airport Code.
+     * @param airportList The ArrayList which contains a String array holding the airport file data
+     * @param str The String airport code to search for.
+     * @return The int type "index" of the airport code String[] or -1 if no match is found. */
+    public static int getAirportIndex(ArrayList<String[]> airportList, String str) {
+        boolean found = false;
+        int i = 0, airportIndex = 0;
+        while (!found && (i < airportList.size())) {
+            String nextCode = airportList.get(i)[0];
+            if (nextCode.equals(str)) {
+                airportIndex = i;
+                found = true;
+                return airportIndex;
             } else {
-                // Get the End Index for the Airport Code
-                endIndex = airport.indexOf(" ", index);
-                // Get the Airport Code
-                str = airport.substring(index, endIndex);
-
-                // Check if this is the Last User Input
-                if (endIndex == airport.length()) {
-                    done = true;
-                }//end if
-                index = endIndex;
+                i++;
             }//end if-else
+        } // get the index of the code in the ArrayList
 
-            // Get the Index of the Airport in the LinkedList
-            int airportIndex = airportList.getIndexOf(str);
-            if (airportIndex == -1) { // If the User Input is not a known Airport Code
-                System.out.print(str);
-                System.out.println(" - unknown");
-            } else { // If the User Input is a known Airport Code
-                // Get the Airport Information
-                String[] airportInfo = (String[])new Object[5];
-                airportInfo = (String[]) airportList.get(airportIndex);
-                // Print the Airport Information
-                System.out.print(str + " - ");
-                System.out.println(airportInfo[2] + " " + airportInfo[1] + ", " + airportInfo[3]);
+        if (found == false) {
+            airportIndex = -1;
+        }//end if
+
+        return airportIndex;
+    }//end getAirportIndex()
+
+    // 2. Let the user of this program enter an airport code and your program should print out the airport information.
+    /** Takes in user inputed airport codes and prints out their airport information.
+     * @param airportList The ArrayList that contains String array, each String[] contains the airport information.
+     * @param airport A string that hold the user input. */
+    public static void getAirportInfo(ArrayList<String[]> airportList, String airport) {
+        // Variables
+        int length = airport.length();
+        String word = "";
+
+        // The loop traverses the user's inputted line of data to get the separated Airport Codes
+        for (int i = 0; i < length; i++) {
+            if (airport.charAt(i) != ' ' && airport.charAt(i) != '\n') { // if the end of the word is not found yet
+                word += airport.charAt(i);
+            } else { // when the end of the word is found
+                // Get the Airport Index
+                int airportIndex = getAirportIndex(airportList, word);
+
+                if (airportIndex == -1) { // If the User Input is not a known Airport Code
+                    System.out.print(word);
+                    System.out.println(" - unknown");
+                } else { // If the User Input is a known Airport Code
+                    // Print the Airport Information
+                    System.out.println(airportList.get(airportIndex)[0] + " - " +
+                    airportList.get(airportIndex)[2] + ". " + airportList.get(airportIndex)[1] + ", " + airportList.get(airportIndex)[3]);
+                }//end if-else
+                word = "";
             }//end if-else
-        }//end while-loop
+        }//end for-loop
     }//end getAirportInfo()
 
     // 3. Find the connection between two airports. Get two airport codes and find the shortest distance between two airports.
-    public static void getShortestDistance() {
-
+    public static void getShortestDistance(GraphInterface<String> graph, String airportOne, String airportTwo) {
+        Stack<String> path = new Stack<>();
+        graph.getCheapestPath(airportOne, airportTwo, path);
     }//end getShortestDistance()
 
     // 4. Insert a connection (edge) between two airports -- the user will be asked to enter the two airport codes and its distance. Note that if a pair of airport codes already exists or if the airport code doesn't exist, print out a warning message.
@@ -216,3 +222,4 @@ public class AirportApp {
     // If elegable input print out the cheapest path
     // Respond: Invaid Command, Airport code unknown, Airports not connected
 }//end AirportApp
+

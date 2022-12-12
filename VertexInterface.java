@@ -18,7 +18,7 @@ public interface VertexInterface<T> {
      * @param endVertex A vertex in the graph that ends the edge.
      * @param edgeWeight A real-valued edge weight, if any
      * @return True if the edge is added or false otherwise. */
-    public boolean connect(VertexInterface<T> endVertex, int edgeWeight);//weighted
+    public boolean connect(VertexInterface<T> endVertex, double edgeWeight);//weighted
     /** Connects this vertex and a given vertex with an unweighted edge.
      * The two vertices cannot be the same, and must not already 
      * have this edge between them. In a directed graph, the edge 
@@ -32,7 +32,7 @@ public interface VertexInterface<T> {
     public Iterator<VertexInterface<T>> getNeighborIterator();
     /** Creates an iterator of the weights of the edges to this vertex's neighbors.
      * @return An iterator of edge weights for edges to neighbors of this vertex. */
-    public Iterator<Integer> getWeightIterator();
+    public Iterator<Double> getWeightIterator();
     /** Sees whether this vertex has at least one neighbor.
      * @return True if the vertex has a neighbor. */
     public boolean hasNeighbor();
@@ -52,10 +52,10 @@ public interface VertexInterface<T> {
     // TODO: note: when the cost is zero, delete the vertex.
     /** Records the cost of the path to this vertex.
      * @param newCost The cost of the path. */
-    public void setCost(int newCost);
+    public void setCost(double newCost);
     /** Retrieves the cost of the path to this vertex.
      * @return The cost of the path. */
-    public int getCost();
+    public double getCost();
     /** Checks if this vertex is equal to a given vertex.
      * @param secondVertex A vertex to compare with this vertex. */
     public boolean equals(VertexInterface<T> secondVertex);

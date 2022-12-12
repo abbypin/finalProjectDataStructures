@@ -1,6 +1,7 @@
 import java.util.Iterator;
+import java.util.PriorityQueue;
+import java.util.Stack;
 
-// TODO: Find out if the toArray() is Needed
 public class DirectedGraph<T> implements GraphInterface<T> {
     private DictionaryInterface<T, VertexInterface<T>> vertices;
     private int edgeCount;
@@ -16,7 +17,7 @@ public class DirectedGraph<T> implements GraphInterface<T> {
         return (addOutcomes == null);
     }//end addVertex()
 
-    public boolean addEdge(T begin, T end, int edgeWeight) {
+    public boolean addEdge(T begin, T end, double edgeWeight) {
         boolean result = false;
 
         VertexInterface<T> beginVertex = vertices.getValue(begin);
@@ -65,38 +66,42 @@ public class DirectedGraph<T> implements GraphInterface<T> {
         return edgeCount;
     }//end getNumberOfEdges()
 
+    public void display() {
+		System.out.println("Graph has " + getNumberOfVertices() + " vertices and " + getNumberOfEdges() + " edges.");
+		
+		Iterator<VertexInterface<T>> vertexIterator = vertices.getValueIterator();
+		while (vertexIterator.hasNext()) {
+			((Vertex<T>)(vertexIterator.next())).display();
+		}//end while-loop
+	}//end display 
+
+    protected void resetVertices() {
+        Iterator<VertexInterface<T>> vertexIterator = vertices.getValueIterator();
+        while (vertexIterator.hasNext()) {
+            VertexInterface<T> nextVertex = vertexIterator.next();
+            nextVertex.unvisit();
+            nextVertex.setCost(0);
+            nextVertex.setPredcessor(null);
+        }//end while-loop
+    }//end resetVertices()
+
 // Algorithm Methods
-    // TODO: Finish this Algorithm // You should get the longest path
-    /* TODO: Traverse the graph
-     * 1. start with the origin vertex <>
-     *    - (A, 0, null) is placed in the Priority Queue <>
-     * - In the loop,
-     * 2. begin the loop by dequeueing the front entry of the Queue <>
-     * 3. use the contents of this entry to change the state of the vertex <>
-     *      1. set path length to 0 <>
-     *      2. set null predicessor <>
-     * 4. origin vertex set to visited <>
-     * 5. get unvisited neighbors and their costs <>
-     * 6. use ^ for to create the objects in the Priority Queue <>
-     * 7. remove the front entry from the Queue and visit that vertex <>
-     * 8. increase the path cost and set the predecessor <>
-     * 9. the get the current vertex's neighbors <>
-     * 10. repeate until you reach the end vertex <>
-     * 11. push the end vertex to the path stack
-     * 12. loop to get the predecessors in the path
-     */
-    public int getCheapestPath(VertexInterface<T> originVertex, VertexInterface<T> endVertex, StackInterface<T> path) {
+    public double getCheapestPath(T origin, T end, Stack<T> path) {
+        resetVertices();
         // Variables
-        int pathCost = 0; // The pathCost
+        double pathCost = 0; // The pathCost
         boolean done = false; // Checks if the endVertex was found
-        PriorityQueue<T> priorityQueue = new PriorityQueue<>(); // The Priority Queue
+        PriorityQueue<EntryPQ> priorityQueue = new PriorityQueue<EntryPQ>(); // The Priority Queue
+        VertexInterface<T> originVertex = vertices.getValue(origin); // Origin Vertex
+        VertexInterface<T> endVertex = vertices.getValue(end); // End Vertex
+
         // Add/Enqueue the Origin Vertex Entry to the Priority Queue
-        priorityQueue.enqueue(new EntryPQ<T>(originVertex, 0, null));
+        priorityQueue.add(new EntryPQ(originVertex, 0, null));
         try { // If the Dequeue fails
             // Loop through the Graph
             while (!done && !priorityQueue.isEmpty()) {
                     // Remove/Dequeue the Front Entry from the Priority Queue
-                    EntryPQ<T> frontEntry = priorityQueue.dequeue(); // EntryPQ Type
+                    EntryPQ frontEntry = priorityQueue.remove(); // EntryPQ Type
                     // Get the Vertex Created by the Front Entry in the Priority Queue
                     VertexInterface<T> frontVertex = frontEntry.getVertex();
                     // If the Vertex is Not Visited
@@ -105,24 +110,33 @@ public class DirectedGraph<T> implements GraphInterface<T> {
                         frontVertex.visit();
 
                         // Set the Front Vertex Cost to the Cost in Front Entry
-                        frontVertex.setCost(frontEntry.getEdgeWeight());
+                        frontVertex.setCost(frontEntry.getCost());
                         // Set the Path Cost to the Froth Entry Cost
                         pathCost = frontVertex.getCost();
 
                         // Set the Predcessor of Front Vertex to the Front Entry Cost
                         frontVertex.setPredcessor(frontEntry.getPredecessor());
-                        if (frontVertex == endVertex) {
+                        if (frontVertex.equals(endVertex)) {
                             done = true;
+                            endVertex.setCost(pathCost);
                         } else {
                             // Get Unvisited Neighbors of Front Vertex
-                            while (frontVertex.hasNeighbor()) {
-                                VertexInterface<T> nextNeighbor = frontVertex.getUnvisitedNeighbor(); // Vertex
-                                int weightOfEdgeToNeighbor = nextNeighbor.getCost(); // Cost
+                            
+                           
+                            // Get the frontVertex Neighbor and Weight Iterators
+                            Iterator<VertexInterface<T>> neighbors = frontVertex.getNeighborIterator();
+                            Iterator<Double> edgeWeights = frontVertex.getWeightIterator();
+                            while (neighbors.hasNext()) {
+                                // Get Next Neighbor and Edge Weight
+                                VertexInterface<T> nextNeighbor = neighbors.next(); // Vertex
+                                double weightOfEdgeToNeighbor = edgeWeights.next(); // Cost
+
+                                // Unvisited Neighbors
                                 if (!nextNeighbor.isVisited()) {
                                     // Set the Cost of the Next Neighbor
-                                    int nextCost = weightOfEdgeToNeighbor + pathCost;
+                                    double nextCost = weightOfEdgeToNeighbor + pathCost;
                                     // Add/Enqueue the Next Neighbor to the Priority Queue
-                                    priorityQueue.enqueue(new EntryPQ<T>(nextNeighbor, nextCost, frontVertex));
+                                    priorityQueue.add(new EntryPQ(nextNeighbor, nextCost, frontVertex));
                                 }//end if
                             }//end while-loop
                         }//end if-else
@@ -131,19 +145,54 @@ public class DirectedGraph<T> implements GraphInterface<T> {
             // Get the Cost of the End Vertex
             pathCost = endVertex.getCost();
             // Push the End Vertex onto the Path Stack
-            path.push(endVertex);
+            path.push(end);
             // Set the Vertex Variable for the While Loop
             VertexInterface<T> vertex = endVertex;
 
             // Loop through to Get the Path Vertexes
             while (vertex.hasPredecessor()) {
                 vertex = vertex.getPredecessor();
-                path.push(vertex);
+                path.push(vertex.getLabel());
+                System.out.print(path.peek() + " - ");
             }//end while-loop
+            System.out.println(" : pathCost = " + pathCost);
         } catch (Exception err) { // If dequeue does not work,..
             System.out.println("NoVertexException: Created error:" + err);
         }//end try-catch
 
         return pathCost;
     }//end getCheapestPath()
+
+    private class EntryPQ implements Comparable<EntryPQ> {
+        private VertexInterface<T> vertex;
+        private VertexInterface<T> previousVertex;
+        private double cost;
+
+        private EntryPQ(VertexInterface<T> vertex, double cost, VertexInterface<T> previousVertex) {
+            this.vertex = vertex;
+            this.previousVertex = previousVertex;
+            this.cost = cost;
+        }//end constructor
+
+        public VertexInterface<T> getVertex() {
+            return vertex;
+        }//end getVertex()
+
+        public VertexInterface<T> getPredecessor() {
+            return previousVertex;
+        }//end getPredecessor()
+
+        public double getCost() {
+            return cost;
+        }//end getCost()
+
+        public int compareTo(EntryPQ otherEntry) {
+            return (int)Math.signum(otherEntry.cost - cost);
+        }//end compareTo()
+
+        public String toString() {
+            String result = vertex.toString() + " " + cost;
+            return result;
+        }//end toString()
+    }//end EntryPQ
 }//end GraphADT

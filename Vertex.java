@@ -6,7 +6,7 @@ public class Vertex<T> implements VertexInterface<T> {
     private ListWithIteratorInterface<Edge> edgeList; // The neighbors
     private boolean visited; // Mark as visited
     private VertexInterface<T> previousVertex; // The previous vertex
-    private int cost; // The cost of the path
+    private double cost; // The cost of the path
 
     /** The constructor sets the label of the vertex.
      * @param vertexLabel A generic type, T, vertex label. */
@@ -37,7 +37,7 @@ public class Vertex<T> implements VertexInterface<T> {
     }//end isVisited()
 
 // Connect Methods
-    public boolean connect(VertexInterface<T> endVertex, int edgeWeight) {
+    public boolean connect(VertexInterface<T> endVertex, double edgeWeight) {
         boolean result = false;
         if (!this.equals(endVertex)) {
             Iterator<VertexInterface<T>> neighbors = getNeighborIterator();
@@ -50,6 +50,7 @@ public class Vertex<T> implements VertexInterface<T> {
             }//end while-loop
             if (!duplicateEdge) {
                 edgeList.add(new Edge(endVertex, edgeWeight));
+                endVertex.setCost(edgeWeight);
                 result = true;
             }//end if
         }//end if
@@ -88,11 +89,11 @@ public class Vertex<T> implements VertexInterface<T> {
     }//end hasPredecessor()
 
 // Cost Methods
-    public void setCost(int newCost) {
+    public void setCost(double newCost) {
         cost = newCost;
     }//end setCost()
 
-    public int getCost() {
+    public double getCost() {
         return cost;
     }//end getCost()
 
@@ -116,9 +117,19 @@ public class Vertex<T> implements VertexInterface<T> {
         return new NeighborIterator();
     }//end getNeighborIterator()
 
-    public Iterator<Integer> getWeightIterator() {
+    public Iterator<Double> getWeightIterator() {
         return new WeightIterator();
     }//end getWeightIterator()
+
+    public void display() {
+        Iterator<VertexInterface<T>> neighbors = getNeighborIterator();
+        Iterator<Double> weights = getWeightIterator();
+        System.out.println("Vertices: ");
+        while (neighbors.hasNext() && weights.hasNext()) {
+            System.out.println(neighbors.next().getLabel() + " " + weights.next());
+        }//end while-loop
+         
+    }//end display()
 
 // Neighbor Iterator
     private class NeighborIterator implements Iterator<VertexInterface<T>> {
@@ -148,7 +159,7 @@ public class Vertex<T> implements VertexInterface<T> {
         }//end remove()
     }//end NeighborIterator
 
-    private class WeightIterator implements Iterator<Integer> {
+    private class WeightIterator implements Iterator<Double> {
         private Iterator<Edge> edges;
         private WeightIterator() {
             edges = edgeList.getIterator();
@@ -158,10 +169,10 @@ public class Vertex<T> implements VertexInterface<T> {
             return edges.hasNext();
         }//end hasNext()
 
-        public Integer next() {
-            Integer nextWeight = null;
+        public Double next() {
+            Double nextWeight = null;
             if (edges.hasNext()) {
-                Integer weightToNextEdge = edges.next().getWeight();
+                Double weightToNextEdge = edges.next().getWeight();
                 nextWeight = weightToNextEdge;
             } else {
                 throw new NoSuchElementException();
@@ -177,9 +188,9 @@ public class Vertex<T> implements VertexInterface<T> {
 // Inner Edge Class
     protected class Edge {
         private VertexInterface<T> vertex;
-        private int weight;
+        private double weight;
 
-        protected Edge(VertexInterface<T> endVertex, int edgeWeight) {
+        protected Edge(VertexInterface<T> endVertex, double edgeWeight) {
             vertex = endVertex;
             weight = edgeWeight;
         }//end constructor
@@ -192,7 +203,7 @@ public class Vertex<T> implements VertexInterface<T> {
             return vertex;
         }//end getEndVertex()
 
-        protected int getWeight() {
+        protected double getWeight() {
             return weight;
         }//end getWeight()
 
@@ -200,7 +211,7 @@ public class Vertex<T> implements VertexInterface<T> {
             vertex = endVertex;
         }//end setEndVertex()
 
-        protected void setWeight(int edgeWeight) {
+        protected void setWeight(double edgeWeight) {
             weight = edgeWeight;
         }//end setWeight()
     }//end Edge
